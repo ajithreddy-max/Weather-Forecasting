@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmWeather AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-blue-50">
+    <div id="app">
+        <header class="bg-blue-600 text-white p-4">
+            <div class="container mx-auto">
+                <h1 class="text-2xl font-bold">FarmWeather AI</h1>
+                <p class="text-sm text-blue-100">Hyperlocal Weather Forecasting for Precision Agriculture</p>
+            </div>
+        </header>
+        
+        <main class="container mx-auto px-4 py-6">
+            <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                <h2 class="text-xl font-bold mb-4">Weather Forecast System</h2>
+                <p>The backend server is running at <span class="font-mono bg-gray-100 px-2 py-1 rounded">http://localhost:3001</span></p>
+                <p class="mt-4">Status: <span class="text-green-600 font-bold" id="status">Checking connection...</span></p>
+                
+                <div class="mt-6">
+                    <h3 class="font-bold">Available API Endpoints:</h3>
+                    <ul class="list-disc pl-5 mt-2">
+                        <li>GET /api/farms - List all farms</li>
+                        <li>GET /api/weather/current/:farmId - Current weather for a farm</li>
+                        <li>GET /api/weather/forecast/:farmId - Weather forecast for a farm</li>
+                        <li>GET /api/weather/historical/:farmId - Historical weather data</li>
+                        <li>GET /api/recommendations/:farmId - Farming recommendations</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="font-bold mb-2">Test API Connection:</h3>
+                    <button id="testBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Test Connection
+                    </button>
+                    <div id="result" class="mt-4 p-4 bg-gray-100 rounded-md hidden">
+                        <pre class="whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Section for displaying farms -->
+                <div id="farmList" class="mt-8">
+                    <h3 class="font-bold">Farm List:</h3>
+                    <ul id="farms" class="list-disc pl-5 mt-2">
+                        <!-- Farms will be displayed here -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusEl = document.getElementById('status');
+            const testBtn = document.getElementById('testBtn');
+            const resultEl = document.getElementById('result');
+            const resultPre = resultEl.querySelector('pre');
+            const farmListEl = document.getElementById('farms');
+            
+            // Test connection on load
+            testConnection();
+            
+            testBtn.addEventListener('click', function() {
+                testConnection();
+            });
+            
+            function testConnection() {
+                statusEl.textContent = 'Checking connection...';
+                statusEl.className = 'text-yellow-600 font-bold';
+                
+                fetch('http://localhost:3001/api/farms')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('API request failed');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        statusEl.textContent = 'Connected';
+                        statusEl.className = 'text-green-600 font-bold';
+                        
+                        resultEl.classList.remove('hidden');
+                        resultPre.textContent = JSON.stringify(data, null, 2);
+                        
+                        // Display farms list
+                        displayFarms(data);
+                    })
+                    .catch(error => {
+                        statusEl.textContent = 'Connection failed';
+                        statusEl.className = 'text-red-600 font-bold';
+                        
+                        resultEl.classList.remove('hidden');
+                        resultPre.textContent = 'Error connecting to API: ' + error.message;
+                    });
+            }
+
+            function displayFarms(farms) {
+                // Clear any previous farms in the list
+                farmListEl.innerHTML = '';
+                
+                // Loop through farms and create list items
+                farms.forEach(farm => {
+                    const li = document.createElement('li');
+                    li.classList.add('mt-2');
+                    li.innerHTML = `<strong>${farm.name}</strong> (ID: ${farm.id})<br>Lat: ${farm.lat}, Lng: ${farm.lng}`;
+                    farmListEl.appendChild(li);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
