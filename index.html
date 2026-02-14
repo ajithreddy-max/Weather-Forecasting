@@ -72,7 +72,7 @@
                 statusEl.textContent = 'Checking connection...';
                 statusEl.className = 'text-yellow-600 font-bold';
                 
-                fetch('http://localhost:3001/api/farms')
+                fetch('http://localhost:9000/api/farms')
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('API request failed');

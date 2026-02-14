@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
+const path = require('path');
 const farmRoutes = require('./routes/farmRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const recommendationRoutes = require('./routes/recommendationRoutes');
@@ -12,7 +13,13 @@ const recommendationRoutes = require('./routes/recommendationRoutes');
 dotenv.config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
+app.use(bodyParser.json());
+
+// Serve static files from the root directory
+app.use(express.static(path.join(__dirname)));
 
 // Sample farms data
 const farms = [
@@ -20,24 +27,22 @@ const farms = [
     { id: 2, name: 'South Orchard', lat: 34.0522, lng: -118.2437, userId: 1 }
 ];
 
-// Endpoint to get the list of farms
-app.get('/api/farms', (req, res) => {
-    res.json(farms);
-});
-
-const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
-
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-
 // Routes
 app.use('/api/farms', farmRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+
+// Endpoint to get the list of farms (fallback if not handled by routes)
+app.get('/api/farms', (req, res) => {
+    res.json(farms);
+});
+
+// Serve index.html at the root route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+const PORT = process.env.PORT || 3002;
 
 // Start the server
 app.listen(PORT, () => {
